@@ -4,9 +4,7 @@ import reactLogo from './assets/react.svg';
 import viteLogo from '/vite.svg';
 
 function App() {
-	const [permission, setPermission] = useState<NotificationPermission>(
-		Notification.permission,
-	);
+	const [permission, setPermission] = useState<NotificationPermission>();
 
 	// useEffect(() => {
 	// 	if ('Notification' in window) {
