@@ -1,26 +1,67 @@
 import { useEffect, useState } from 'react';
 import './App.css';
 import reactLogo from './assets/react.svg';
-import worker_script from './workers/notifications';
 import viteLogo from '/vite.svg';
 
-let worker: Worker;
-
 function App() {
-	if (window.Worker) worker = new Worker(worker_script);
+	const [permission, setPermission] = useState<NotificationPermission>(
+		Notification.permission,
+	);
 
 	useEffect(() => {
-		worker.postMessage('Beunos Dias!');
-	});
+		if ('Notification' in window) {
+			Notification.requestPermission().then(setPermission);
+		}
+	}, []);
 
-	const [count, setCount] = useState(0);
+	// const simulatePush = async () => {
+	// 	if (permission !== 'granted') {
+	// 		alert('Разрешите уведомления');
+	// 		return;
+	// 	}
 
-	const handleNotification = async () => {
-		const permission = await Notification.requestPermission();
-		if (permission === 'granted') {
-			console.log('✅ Уведомления разрешены');
+	// 	const registration = await navigator.serviceWorker.getRegistration();
+	// 	if (registration?.active) {
+	// 		registration.active.postMessage({
+	// 			type: 'SIMULATE_PUSH',
+	// 			payload: {
+	// 				title: 'Привет от React!',
+	// 				body: 'Это уведомление сработало через postMessage',
+	// 			},
+	// 		});
+	// 	} else {
+	// 		alert('Service Worker не активен');
+	// 	}
+	// };
+
+	const subscribeToPush = async () => {
+		if (permission !== 'granted') {
+			alert('Сначала разрешите уведомления');
+			return;
+		}
+
+		const registration = await navigator.serviceWorker.ready;
+
+		const subscription = await registration.pushManager.subscribe({
+			userVisibleOnly: true,
+			applicationServerKey: import.meta.env.VITE_VAPID_PUBLIC_KEY,
+		});
+
+		const response = await fetch(
+			`${import.meta.env.VITE_BACKEND_URL}/subscribe`,
+			{
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json',
+				},
+				body: JSON.stringify(subscription),
+			},
+		);
+
+		if (response.ok) {
+			alert('✅ Подписка отправлена на сервер');
 		} else {
-			console.log('❌ Уведомления отклонены');
+			alert('❌ Ошибка отправки подписки');
 		}
 	};
 
@@ -40,10 +81,7 @@ function App() {
 			</div>
 			<h1>Vite + React</h1>
 			<div className="card">
-				<button onClick={() => setCount((count) => count + 1)}>
-					count is {count}
-				</button>
-				<button onClick={handleNotification}>Уведолмения</button>
+				<button onClick={subscribeToPush}>Уведолмения</button>
 				<p>
 					Edit <code>src/App.tsx</code> and save to test HMR
 				</p>
