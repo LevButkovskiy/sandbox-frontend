@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import './App.css';
 import reactLogo from './assets/react.svg';
 import viteLogo from '/vite.svg';
@@ -8,12 +8,15 @@ function App() {
 		Notification.permission,
 	);
 
-	useEffect(() => {
-		if ('Notification' in window) {
-			Notification.requestPermission().then(setPermission);
-		}
-	}, []);
+	// useEffect(() => {
+	// 	if ('Notification' in window) {
+	// 		Notification.requestPermission().then(setPermission);
+	// 	}
+	// }, []);
 
+	const requestPerm = () => {
+		Notification.requestPermission().then(setPermission);
+	};
 	// const simulatePush = async () => {
 	// 	if (permission !== 'granted') {
 	// 		alert('Разрешите уведомления');
@@ -82,6 +85,8 @@ function App() {
 			<h1>Vite + React</h1>
 			<div className="card">
 				<button onClick={subscribeToPush}>Уведолмения</button>
+				<button onClick={requestPerm}>Доступ</button>
+
 				<p>
 					Edit <code>src/App.tsx</code> and save to test HMR
 				</p>
